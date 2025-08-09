@@ -3,6 +3,20 @@
 version = 4
 
 [[package]]
+name = "MinT"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cosmic-text",
+ "pollster",
+ "portable-pty",
+ "tokio",
+ "vte",
+ "wgpu",
+ "winit",
+]
+
+[[package]]
 name = "ab_glyph"
 version = "0.2.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -873,20 +887,6 @@ dependencies = [
  "log",
  "objc",
  "paste",
-]
-
-[[package]]
-name = "min_t"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "cosmic-text",
- "pollster",
- "portable-pty",
- "tokio",
- "vte",
- "wgpu",
- "winit",
 ]
 
 [[package]]

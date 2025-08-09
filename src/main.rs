@@ -5,7 +5,7 @@ use winit::{
     application::ApplicationHandler,
     event::{KeyEvent, WindowEvent},
     event_loop::{self, EventLoop},
-    keyboard::{KeyCode, PhysicalKey},
+    keyboard::PhysicalKey,
     window::Window,
 };
 
@@ -25,7 +25,8 @@ impl App {
 
 impl ApplicationHandler for App {
     fn resumed(&mut self, event_loop: &winit::event_loop::ActiveEventLoop) {
-        let window_attr = Window::default_attributes();
+        let mut window_attr = Window::default_attributes();
+        window_attr.title = "MinT".to_string();
         let window = event_loop.create_window(window_attr).unwrap();
         match pollster::block_on(State::new(Arc::new(window))) {
             Ok(state) => self.state = Some(state),
@@ -53,9 +54,25 @@ impl ApplicationHandler for App {
                 event_loop.exit();
             }
             WindowEvent::Resized(size) => state.resize(size.width, size.height),
-            WindowEvent::RedrawRequested => {
-                state.render();
-            }
+            WindowEvent::KeyboardInput {
+                event:
+                    KeyEvent {
+                        physical_key: PhysicalKey::Code(code),
+                        state: key_state,
+                        ..
+                    },
+                ..
+            } => state.handle_key(event_loop, code, key_state.is_pressed()),
+            WindowEvent::RedrawRequested => match state.render() {
+                Ok(_) => {}
+                Err(wgpu::SurfaceError::Lost | wgpu::SurfaceError::Outdated) => {
+                    let size = state.window.inner_size();
+                    state.resize(size.width, size.height);
+                }
+                Err(e) => {
+                    eprintln!("Unable to render {e}");
+                }
+            },
             _ => {}
         }
     }
