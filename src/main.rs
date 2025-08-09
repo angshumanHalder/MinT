@@ -3,9 +3,10 @@ use std::sync::Arc;
 use render::state::State;
 use winit::{
     application::ApplicationHandler,
-    event::WindowEvent,
-    event_loop::{self, ControlFlow, EventLoop},
-    window::{self, Window},
+    event::{KeyEvent, WindowEvent},
+    event_loop::{self, EventLoop},
+    keyboard::{KeyCode, PhysicalKey},
+    window::Window,
 };
 
 mod render;
@@ -38,24 +39,35 @@ impl ApplicationHandler for App {
     fn window_event(
         &mut self,
         event_loop: &event_loop::ActiveEventLoop,
-        _: winit::window::WindowId,
+        _window_id: winit::window::WindowId,
         event: winit::event::WindowEvent,
     ) {
+        let state = match &mut self.state {
+            Some(s) => s,
+            None => return,
+        };
+
         match event {
             WindowEvent::CloseRequested => {
                 println!("The close button is clicked!");
                 event_loop.exit();
             }
-            WindowEvent::RedrawRequested => {}
-            _ => (),
+            WindowEvent::Resized(size) => state.resize(size.width, size.height),
+            WindowEvent::RedrawRequested => {
+                state.render();
+            }
+            _ => {}
         }
     }
 }
 
-fn main() {
-    let event_loop = EventLoop::new().unwrap();
-    event_loop.set_control_flow(ControlFlow::Wait);
-
+fn run() -> anyhow::Result<()> {
+    let event_loop = EventLoop::with_user_event().build()?;
     let mut app = App::new();
-    let _ = event_loop.run_app(&mut app);
+    event_loop.run_app(&mut app)?;
+    Ok(())
+}
+
+fn main() {
+    let _ = run();
 }
